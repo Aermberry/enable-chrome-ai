@@ -10,7 +10,7 @@
 
 <img width="512" alt="Google Chrome Gemini in Chrome" src="https://github.com/user-attachments/assets/a88c56a7-f20b-432a-926c-0184194225b4" />
 
-轻量 Python 脚本，通过修改本地 Chrome 配置（`variations_country`、`variations_permanent_consistency_country` 和 `is_glic_eligible`）启用浏览器内置 AI 功能，无需额外开关。
+轻量 Python 脚本，通过修改本地 Chrome 的 GLIC/Gemini 资格缓存（`profile.info_cache.*.is_glic_eligible`）、地区变体配置与启动器配置来启用浏览器内置 AI 功能，无需额外开关。
 
 ## ✅ 环境要求
 - Python `3.13+`（见 `.python-version` / `pyproject.toml`）
@@ -32,10 +32,11 @@
 
 ## 🔧 做了什么
 - 自动定位 Windows / macOS / Linux 上的 Chrome Stable / Canary / Dev / Beta 用户数据目录。
-- 关闭顶层 Chrome 进程以避免文件锁，再在补丁后恢复。
+- 关闭所有 Chrome 进程并等待其完全退出以避免文件锁，再在补丁后恢复此前运行的 Chrome 可执行文件。
 - 在 `Local State` 中递归查找并将所有 `is_glic_eligible` 设为 `true`。
-- 在 `Local State` 中将 `variations_country` 设为 `"us"`。
-- 在 `Local State` 中将 `variations_permanent_consistency_country` 设为 `["<版本号>", "us"]`。
+- 为每个本地配置文件将 `profile.info_cache.<profile>.is_glic_eligible` 设为 `true`。Chrome 152 将资格值存放在这里，并非顶层 `glic` 属性。
+- 在 `Local State` 中将 `variations_country` 设为 `"us"`，并将 `variations_permanent_consistency_country` 设为 `["<版本号>", "us"]`。
+- 等待所有 Chrome 进程完全退出后再替换 `Local State`，避免 Chrome 在关闭过程中覆盖补丁。
 - 重启补丁前已运行的 Chrome 版本。
 
 ## ⚠️ 已知限制 / 注意事项
@@ -47,6 +48,7 @@
 ## 🛟 注意
 - 脚本会修改现有 Chrome 配置，如需保险请先备份 `User Data`。
 - 使用拥有该 Chrome 配置的同一系统用户运行，确保有写入权限。
+- 本工具只能修改本地 Chrome 配置。Gemini in Chrome 还会由 Google 根据登录账号、年龄/家长监管或组织策略、设备语言及网络地区进行服务端校验；脚本无法绕过服务端拒绝。
 - 与 Google 无关，风险自担。
 
 ## 📜 许可

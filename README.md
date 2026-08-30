@@ -11,7 +11,7 @@ Enable Gemini in Chrome, AI Powered History search, and DevTools AI Innovations 
 
 <img width="512" alt="Google Chrome Gemini in Chrome" src="https://github.com/user-attachments/assets/a88c56a7-f20b-432a-926c-0184194225b4" />
 
-Tiny Python helper that enables Chrome's built-in AI features by patching your local profile data (`variations_country`, `variations_permanent_consistency_country`, and `is_glic_eligible`)—no browser flags required.
+Tiny Python helper that updates Chrome's local GLIC/Gemini eligibility cache (`profile.info_cache.*.is_glic_eligible`), region variation preferences, and launcher preference—no browser flags required.
 
 ## ✅ Requirements
 - Python `3.13+` (see `.python-version` / `pyproject.toml`)
@@ -33,10 +33,11 @@ Tiny Python helper that enables Chrome's built-in AI features by patching your l
 
 ## 🔧 What Happens
 - Finds Chrome user data for Stable/Canary/Dev/Beta on Windows, macOS, and Linux.
-- Kills top-level Chrome processes to avoid file locks, then brings them back.
+- Stops all Chrome processes, waits for them to exit, then brings the previously running Chrome executable back.
 - Sets all `is_glic_eligible` to `true` in `Local State` (recursive search).
-- Sets `variations_country` to `"us"` in `Local State`.
-- Sets `variations_permanent_consistency_country` to `["<version>", "us"]` in `Local State`.
+- Sets `profile.info_cache.<profile>.is_glic_eligible` to `true` for every local profile. Chrome 152 stores the eligibility value here; it is not a top-level `glic` property.
+- Sets `variations_country` to `"us"` and `variations_permanent_consistency_country` to `["<version>", "us"]` in `Local State`.
+- Waits for all Chrome processes to exit before replacing `Local State`, preventing Chrome from overwriting the patch during shutdown.
 - Restarts any Chrome builds that were running before the patch.
 
 ## ⚠️ Caveats / Known Limitations
@@ -48,6 +49,7 @@ Tiny Python helper that enables Chrome's built-in AI features by patching your l
 ## 🛟 Notes
 - The script writes to your existing Chrome profile; back up `User Data` if you want a safety net.
 - Run as the same OS user who owns the Chrome profile to ensure write access.
+- This only changes local Chrome preferences. Gemini in Chrome is also gated by Google using the signed-in account, age/supervision or organization policy, device language, and network region; the script cannot override a server-side denial.
 - Not affiliated with Google—use at your own risk.
 
 ## 📜 License
